@@ -9,16 +9,13 @@ int main() {
   for (int i = 0; i < kSize; i++) 
     in >> window[i];
 
-  int new_num, count = 0;
+  int new_num, count = 0, front = 0;
   while ((in >> new_num)) {
-    count += (new_num > window[0])*1;
-    for (int i = 0; i < kSize - 1; i++) {
-      window[i] = window[i+1];
-    }
-    window[kSize-1] = new_num;
+    count += (new_num > window[front]); //last element
+    window[front] = new_num;
+    front = (front + 1)% kSize;
   }
   
   std::cout << "There are " << count << " increases.\n";
   in.close();
-  return 0;
 }
