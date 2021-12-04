@@ -80,7 +80,6 @@ bool checkCard(int const bingo_card[BINGO_SIZE],
   return false;
 }
 
-
 int main() {
   std::ifstream in("04_1.data");
 
