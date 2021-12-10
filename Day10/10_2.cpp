@@ -18,60 +18,46 @@ std::vector<std::string> getData(std::ifstream& in) {
   return result;
 }
 
-std::array<char, 4> const kOpenBrackets = {'(', '[', '{', '<'};
-std::array<char, 4> const kClosBrackets = {')', ']', '}', '>'};
-std::array<int, 4> const kCompletionPoints = {1, 2, 3, 4};
+std::map<char, char> const kBrackets = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
+std::map<char, int> const kCompletionPoints {{')', 1},{']', 2},{'}', 3}, {'>', 4}};
 
-bool isIncomplete(std::string const& line) {
-  return true;
-}
-
-long incompleteValue(std::string const& line, int pos, std::stack<char>& open, std::stack<char>& close) {
+long incompleteValue(std::string const& line, int pos, std::stack<char>& close) {
   if (pos == line.length()) {
     long total = 0;
-    while (!open.empty()) {
-      int open_idx = std::distance(kOpenBrackets.begin(), std::find(kOpenBrackets.begin(), kOpenBrackets.end(), open.top()));
-      total = total * 5 + kCompletionPoints[open_idx];
-      open.pop();
+    while (!close.empty()) {
+      total = total * 5 + kCompletionPoints.at(close.top());
       close.pop();
     }
     return total;
   }
 
-  int open_idx = std::distance(kOpenBrackets.begin(), std::find(kOpenBrackets.begin(), kOpenBrackets.end(), line[pos]));
-  if (open_idx < 4) {
-    open.push(line[pos]);
-    close.push(kClosBrackets[open_idx]);
-    return incompleteValue(line, pos + 1, open, close);
+  if (kBrackets.count(line[pos])) {
+    close.push(kBrackets.at(line[pos]));
+    return incompleteValue(line, pos + 1, close);
   }
 
-  int clos_idx = std::distance(kClosBrackets.begin(), std::find(kClosBrackets.begin(), kClosBrackets.end(), line[pos]));
   char expected_closing = close.top();
-  if (expected_closing != kClosBrackets[clos_idx]) {
+  if (expected_closing != line[pos]) {
     return 0; //corrupt
   }
  
-  open.pop();
   close.pop();
-  return incompleteValue(line, pos + 1, open, close);
+  return incompleteValue(line, pos + 1, close);
 }
 
 void computeSyntaxErrorScore(std::vector<std::string> data) {
   std::vector<long> results;
   for (auto const& line: data) {
-    std::stack<char> open = {};
     std::stack<char> close = {};
 
-    long line_score = incompleteValue(line, 0, open, close);
+    long line_score = incompleteValue(line, 0, close);
     if (line_score > 0 ) {
       results.push_back(line_score);
     }
   }
 
   std::sort(results.begin(), results.end());
-
-  long score = results[results.size()/2];
-  std::cout << "Total syntax error score of " << data.size() << " resulting in " << results.size() << " incomplete pages" << " is: " << score << "\n";
+  std::cout << "Total syntax error score of " << results[results.size()/2] << "\n"; 
 }
 
 void test() {
