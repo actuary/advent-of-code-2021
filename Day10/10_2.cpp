@@ -20,7 +20,6 @@ std::vector<std::string> getData(std::ifstream& in) {
 
 std::array<char, 4> const kOpenBrackets = {'(', '[', '{', '<'};
 std::array<char, 4> const kClosBrackets = {')', ']', '}', '>'};
-std::array<int, 4> const kPoints = {3, 57, 1197, 25137};
 std::array<int, 4> const kCompletionPoints = {1, 2, 3, 4};
 
 bool isIncomplete(std::string const& line) {
@@ -40,14 +39,13 @@ long incompleteValue(std::string const& line, int pos, std::stack<char>& open, s
   }
 
   int open_idx = std::distance(kOpenBrackets.begin(), std::find(kOpenBrackets.begin(), kOpenBrackets.end(), line[pos]));
-  int clos_idx = std::distance(kClosBrackets.begin(), std::find(kClosBrackets.begin(), kClosBrackets.end(), line[pos]));
-
   if (open_idx < 4) {
     open.push(line[pos]);
     close.push(kClosBrackets[open_idx]);
     return incompleteValue(line, pos + 1, open, close);
   }
 
+  int clos_idx = std::distance(kClosBrackets.begin(), std::find(kClosBrackets.begin(), kClosBrackets.end(), line[pos]));
   char expected_closing = close.top();
   if (expected_closing != kClosBrackets[clos_idx]) {
     return 0; //corrupt
